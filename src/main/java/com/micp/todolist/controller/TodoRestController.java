@@ -24,7 +24,7 @@ public class TodoRestController {
     }
 
     /**
-     * 獲取所有任務，包含 overdue 狀態
+     * 獲取所有任務，包含 overdue 狀態和當月完成狀態
      * GET /api/todos
      */
     @GetMapping
@@ -37,7 +37,7 @@ public class TodoRestController {
     }
 
     /**
-     * 將 Todo 轉換為包含 overdue 狀態的 Map
+     * 將 Todo 轉換為包含各種狀態的 Map
      */
     private Map<String, Object> convertToMap(Todo todo) {
         Map<String, Object> map = new HashMap<>();
@@ -47,10 +47,12 @@ public class TodoRestController {
         map.put("completed", todo.isCompleted());
         map.put("createdDate", todo.getCreatedDate());
         map.put("dueDate", todo.getDueDate());
-        map.put("priority", todo.getPriority()); // 添加优先级字段
+        map.put("priority", todo.getPriority()); // 添加優先級字段
         map.put("reminder", todo.getReminder()); // 添加提醒字段
+        map.put("completedDate", todo.getCompletedDate()); // 添加完成時間字段
         map.put("overdue", todo.isOverdue());
         map.put("dueToday", todo.isDueToday());
+        map.put("completedThisMonth", todo.isCompletedThisMonth()); // 添加當月完成字段
         return map;
     }
 
@@ -75,15 +77,15 @@ public class TodoRestController {
     public ResponseEntity<Map<String, Object>> createTodo(@RequestBody Map<String, Object> todoData) {
         Todo todo = new Todo();
 
-        // 设置标题
+        // 設置標題
         todo.setTitle((String) todoData.get("title"));
 
-        // 设置描述
+        // 設置描述
         if (todoData.containsKey("description") && todoData.get("description") != null) {
             todo.setDescription((String) todoData.get("description"));
         }
 
-        // 设置完成状态（默认为未完成）
+        // 設置完成狀態（默認為未完成）
         todo.setCompleted(false);
 
         // 處理截止日期
@@ -98,14 +100,14 @@ public class TodoRestController {
             todo.setDueDate(LocalDate.now());
         }
 
-        // 设置优先级
+        // 設置優先級
         if (todoData.containsKey("priority") && todoData.get("priority") != null) {
             todo.setPriority((String) todoData.get("priority"));
         } else {
-            todo.setPriority("low"); // 默认为低优先级
+            todo.setPriority("low"); // 默認為低優先級
         }
 
-        // 处理提醒时间
+        // 處理提醒時間
         if (todoData.containsKey("reminder") && todoData.get("reminder") != null) {
             try {
                 String reminderStr = (String) todoData.get("reminder");
@@ -115,7 +117,7 @@ public class TodoRestController {
                     todo.setReminder(reminder);
                 }
             } catch (Exception e) {
-                // 如果解析失败，不设置提醒
+                // 如果解析失敗，不設置提醒
                 System.err.println("Failed to parse reminder: " + e.getMessage());
             }
         }
@@ -152,7 +154,7 @@ public class TodoRestController {
             return ResponseEntity.notFound().build();
         }
 
-        // 更新标题
+        // 更新標題
         if (todoData.containsKey("title")) {
             todo.setTitle((String) todoData.get("title"));
         }
@@ -162,7 +164,7 @@ public class TodoRestController {
             todo.setDescription((String) todoData.get("description"));
         }
 
-        // 更新完成状态
+        // 更新完成狀態
         if (todoData.containsKey("completed")) {
             todo.setCompleted((Boolean) todoData.get("completed"));
         }
@@ -177,12 +179,12 @@ public class TodoRestController {
             }
         }
 
-        // 更新优先级
+        // 更新優先級
         if (todoData.containsKey("priority")) {
             todo.setPriority((String) todoData.get("priority"));
         }
 
-        // 更新提醒时间
+        // 更新提醒時間
         if (todoData.containsKey("reminder")) {
             try {
                 String reminderStr = (String) todoData.get("reminder");
@@ -194,7 +196,7 @@ public class TodoRestController {
                     todo.setReminder(null);
                 }
             } catch (Exception e) {
-                // 保持原有提醒时间
+                // 保持原有提醒時間
             }
         }
 

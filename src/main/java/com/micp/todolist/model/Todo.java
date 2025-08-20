@@ -3,6 +3,7 @@ package com.micp.todolist.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 
 @Entity
 public class Todo {
@@ -28,6 +29,9 @@ public class Todo {
 
     private LocalDateTime reminder; // 提醒時間
 
+    @Column(name = "completed_date")
+    private LocalDateTime completedDate; // 完成時間
+
     public Todo() {
         this.createdDate = LocalDateTime.now();
         this.dueDate = LocalDate.now(); // 默認當天截止
@@ -40,6 +44,9 @@ public class Todo {
         this.createdDate = LocalDateTime.now();
         this.dueDate = LocalDate.now();
         this.priority = "low";
+        if (completed) {
+            this.completedDate = LocalDateTime.now();
+        }
     }
 
     public Todo(String title, boolean completed, LocalDate dueDate, String description, String priority, LocalDateTime reminder) {
@@ -50,6 +57,9 @@ public class Todo {
         this.description = description;
         this.priority = (priority != null) ? priority : "low";
         this.reminder = reminder;
+        if (completed) {
+            this.completedDate = LocalDateTime.now();
+        }
     }
 
     // ===== Getters and Setters =====
@@ -71,6 +81,13 @@ public class Todo {
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
+        // 當設置完成狀態時，更新完成時間
+        if (completed && this.completedDate == null) {
+            this.completedDate = LocalDateTime.now();
+        } else if (!completed) {
+            // 當任務變回未完成時，清空完成時間
+            this.completedDate = null;
+        }
     }
 
     public LocalDateTime getCreatedDate() {
@@ -113,6 +130,14 @@ public class Todo {
         this.reminder = reminder;
     }
 
+    public LocalDateTime getCompletedDate() {
+        return completedDate;
+    }
+
+    public void setCompletedDate(LocalDateTime completedDate) {
+        this.completedDate = completedDate;
+    }
+
     /**
      * 判斷任務是否過期
      * 過期條件：未完成 且 截止日期在今天之前
@@ -132,7 +157,23 @@ public class Todo {
         if (dueDate == null) {
             return false;
         }
-        return dueDate.equals(LocalDate.now()) ||
-                (dueDate.isBefore(LocalDate.now()) && completed);
+        // 如果是已完成的任務，則不算今天的任務（會被歸類到當月完成）
+        if (completed) {
+            return false;
+        }
+        return dueDate.equals(LocalDate.now());
+    }
+
+    /**
+     * 判斷任務是否為當月完成
+     * 當月完成條件：已完成 且 完成時間在當月
+     */
+    public boolean isCompletedThisMonth() {
+        if (!completed || completedDate == null) {
+            return false;
+        }
+        YearMonth currentMonth = YearMonth.now();
+        YearMonth completedMonth = YearMonth.from(completedDate);
+        return currentMonth.equals(completedMonth);
     }
 }

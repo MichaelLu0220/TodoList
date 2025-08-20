@@ -285,15 +285,40 @@ h1 {
     display: flex;
     justify-content: space-between;
 }
-/* 为任务添加优先级视觉效果 */
+
+/* Reset 按鈕樣式 */
+.reset-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    color: #6c757d;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+    color: #495057;
+}
+
+.reset-btn:active {
+    background: #dee2e6;
+    transform: translateY(1px);
+}
+
+/* 為任務添加優先級視覺效果 */
 .task {
     display: flex;
     align-items: center;
     padding: 8px 0;
     border-bottom: 1px solid #eee;
-    border-left: 4px solid #eee; /* 默认灰色边框 */
-    padding-left: 12px; /* 增加左边距给边框留空间 */
-    transition: all 0.3s ease; /* 添加过渡效果 */
+    border-left: 4px solid #eee; /* 默認灰色邊框 */
+    padding-left: 12px; /* 增加左邊距給邊框留空間 */
+    transition: all 0.3s ease; /* 添加過渡效果 */
 }
 
 /* Low priority - 沒有邊框 */
@@ -303,21 +328,21 @@ h1 {
 }
 
 .task.priority-medium {
-    border-left-color: #FF9800; /* 橙色 - 中等优先级 */
+    border-left-color: #FF9800; /* 橙色 - 中等優先級 */
 }
 
 .task.priority-high {
-    border-left-color: #FF5722; /* 深橙色 - 高优先级 */
+    border-left-color: #FF5722; /* 深橙色 - 高優先級 */
 }
 
 
-/* 鼠标悬停效果 */
+/* 鼠標懸停效果 */
 .task:hover {
     background-color: #f8f9fa;
     transform: translateX(2px);
 }
 
-/* 优先级图标样式 (可选方案) */
+/* 優先級圖標樣式 (可選方案) */
 .priority-icon {
     width: 12px;
     height: 12px;
@@ -334,4 +359,3 @@ h1 {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
 }
-
