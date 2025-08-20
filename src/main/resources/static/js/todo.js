@@ -196,6 +196,13 @@ const TodoApp = (() => {
                 return priorityMap[priority] || '';
             };
 
+            // 處理描述顯示
+            const description = task.description || '';
+            const maxDescLength = 80;
+            const truncatedDesc = description.length > maxDescLength
+                ? description.substring(0, maxDescLength) + '...'
+                : description;
+
             // 為已完成的任務顯示完成日期，未完成的任務顯示截止日期
             const dateText = task.completed && task.completedDate
                 ? new Date(task.completedDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
@@ -204,8 +211,11 @@ const TodoApp = (() => {
             div.innerHTML = `
                 <input type="checkbox" ${task.completed ? 'checked' : ''}
                     onchange="TodoApp.toggleTask(${task.id})" ${task.completed ? 'disabled' : ''}>
-                <span>${task.title}</span>
-                <small style="margin-left:auto; color:#888;" title="${getPriorityText(task.priority)}">
+                <div class="task-content">
+                    <span class="task-title">${task.title}</span>
+                    ${description ? `<div class="task-description">${truncatedDesc}</div>` : ''}
+                </div>
+                <small class="task-date" title="${getPriorityText(task.priority)}">
                     ${dateText}
                 </small>
             `;
@@ -221,6 +231,7 @@ const TodoApp = (() => {
         });
     }
 
+    // 更新 showTaskDetails 函數來支援 comment 功能
     function showTaskDetails(task) {
         const modal = document.createElement('div');
         modal.className = 'task-modal';
@@ -252,8 +263,16 @@ const TodoApp = (() => {
                     <h2 id="taskTitle">${task.title}</h2>
                     <p class="task-desc">${task.description || 'No description'}</p>
                     <div class="sub-task-placeholder">+ Add sub-task</div>
-                    <div class="comment-box">
-                        <textarea placeholder="Comment"></textarea>
+
+                    <!-- 改進的 Comment 區域 -->
+                    <div class="comment-section">
+                        <div class="comment-header">
+                            <strong>Notes</strong>
+                            <span class="comment-status" id="commentStatus"></span>
+                        </div>
+                        <div class="comment-box">
+                            <textarea id="commentTextarea" placeholder="Add notes about this task..." data-task-id="${task.id}">${task.comment || ''}</textarea>
+                        </div>
                     </div>
                 </div>
                 <div class="task-right">
@@ -300,6 +319,9 @@ const TodoApp = (() => {
         `;
         document.body.appendChild(modal);
 
+        // 設置 comment 功能
+        setupCommentFunctionality(task.id);
+
         modal.querySelector('.close-btn').addEventListener('click', () => modal.remove());
 
         // 添加 Reset 按鈕事件監聽器
@@ -317,6 +339,68 @@ const TodoApp = (() => {
         if (DEVELOPER_MODE) {
             window.setupDateEditHandlers(task, modal);
         }
+    }
+
+    // 新增 comment 功能設置
+    function setupCommentFunctionality(taskId) {
+        const commentTextarea = document.getElementById('commentTextarea');
+        const commentStatus = document.getElementById('commentStatus');
+        let saveTimeout;
+
+        // 顯示保存狀態
+        function showSaveStatus(status, message) {
+            commentStatus.textContent = message;
+            commentStatus.className = `comment-status ${status}`;
+
+            if (status === 'saved') {
+                setTimeout(() => {
+                    commentStatus.textContent = '';
+                    commentStatus.className = 'comment-status';
+                }, 2000);
+            }
+        }
+
+        // 自動保存功能
+        function autoSaveComment() {
+            const comment = commentTextarea.value;
+            showSaveStatus('saving', 'Saving...');
+
+            fetch(`${API_URL}/${taskId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ comment: comment })
+            })
+            .then(response => response.json())
+            .then(() => {
+                showSaveStatus('saved', 'Saved');
+            })
+            .catch(error => {
+                console.error('Error saving comment:', error);
+                showSaveStatus('error', 'Save failed');
+            });
+        }
+
+        // 監聽輸入事件，延遲自動保存
+        commentTextarea.addEventListener('input', () => {
+            showSaveStatus('typing', 'Typing...');
+
+            // 清除之前的定時器
+            clearTimeout(saveTimeout);
+
+            // 設置新的定時器，1.5秒後自動保存
+            saveTimeout = setTimeout(autoSaveComment, 1500);
+        });
+
+        // 監聽失去焦點事件，立即保存
+        commentTextarea.addEventListener('blur', () => {
+            clearTimeout(saveTimeout);
+            if (commentTextarea.value !== (commentTextarea.dataset.originalValue || '')) {
+                autoSaveComment();
+            }
+        });
+
+        // 記錄原始值
+        commentTextarea.dataset.originalValue = commentTextarea.value;
     }
 
     async function saveTaskEdit(task, modal) {

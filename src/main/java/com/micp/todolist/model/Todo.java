@@ -17,6 +17,9 @@ public class Todo {
     @Column(columnDefinition = "TEXT")
     private String description;   // 任務描述
 
+    @Column(columnDefinition = "TEXT")
+    private String comment;       // 任務筆記/評論
+
     private boolean completed;
 
     @Column(name = "created_date")
@@ -112,6 +115,14 @@ public class Todo {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public String getPriority() {

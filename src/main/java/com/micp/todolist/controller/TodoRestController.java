@@ -43,16 +43,17 @@ public class TodoRestController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", todo.getId());
         map.put("title", todo.getTitle());
-        map.put("description", todo.getDescription()); // 添加描述字段
+        map.put("description", todo.getDescription());
+        map.put("comment", todo.getComment()); // 新增 comment 欄位
         map.put("completed", todo.isCompleted());
         map.put("createdDate", todo.getCreatedDate());
         map.put("dueDate", todo.getDueDate());
-        map.put("priority", todo.getPriority()); // 添加優先級字段
-        map.put("reminder", todo.getReminder()); // 添加提醒字段
-        map.put("completedDate", todo.getCompletedDate()); // 添加完成時間字段
+        map.put("priority", todo.getPriority());
+        map.put("reminder", todo.getReminder());
+        map.put("completedDate", todo.getCompletedDate());
         map.put("overdue", todo.isOverdue());
         map.put("dueToday", todo.isDueToday());
-        map.put("completedThisMonth", todo.isCompletedThisMonth()); // 添加當月完成字段
+        map.put("completedThisMonth", todo.isCompletedThisMonth());
         return map;
     }
 
@@ -83,6 +84,11 @@ public class TodoRestController {
         // 設置描述
         if (todoData.containsKey("description") && todoData.get("description") != null) {
             todo.setDescription((String) todoData.get("description"));
+        }
+
+        // 設置評論
+        if (todoData.containsKey("comment") && todoData.get("comment") != null) {
+            todo.setComment((String) todoData.get("comment"));
         }
 
         // 設置完成狀態（默認為未完成）
@@ -162,6 +168,11 @@ public class TodoRestController {
         // 更新描述
         if (todoData.containsKey("description")) {
             todo.setDescription((String) todoData.get("description"));
+        }
+
+        // 更新評論
+        if (todoData.containsKey("comment")) {
+            todo.setComment((String) todoData.get("comment"));
         }
 
         // 更新完成狀態
