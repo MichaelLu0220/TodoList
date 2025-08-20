@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Today</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Today</h1>
+        <div class="task-count" id="taskCount">0 tasks</div>
+    </header>
+
+    <main>
+        <!-- Overdue Section -->
+        <section>
+            <div class="section-header">
+                <span>Overdue</span>
+                <span class="reschedule">Reschedule</span>
+            </div>
+            <div id="overdueTasks" class="task-list"></div>
+        </section>
+
+        <!-- Today Section -->
+        <section>
+            <div class="section-header">
+                <span id="todayLabel"></span>
+            </div>
+            <div id="todayTasks" class="task-list"></div>
+        </section>
+
+        <!-- Add Task -->
+        <div class="add-task" id="addTaskBtn">+ Add task</div>
+
+        <!-- Expanded Add Task Form -->
+        <div id="addTaskForm" class="add-task-form hidden">
+            <input type="text" id="taskTitleInput" placeholder="Task title" class="add-task-input">
+            <textarea id="taskDescInput" placeholder="Description" class="add-task-textarea"></textarea>
+
+            <div class="task-options">
+                <select id="dateSelect" class="tag-select">
+                    <option value="today">Today</option>
+                    <option value="tomorrow">Tomorrow</option>
+                    <option value="custom">Pick a date</option>
+                </select>
+                <input type="date" id="customDateInput" class="hidden" />
+
+                <select id="prioritySelect" class="tag-select">
+                    <option value="normal">Normal</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+
+                <select id="reminderSelect" class="tag-select">
+                    <option value="">No reminder</option>
+                    <option value="1h">In 1 hour</option>
+                    <option value="tomorrow9">Tomorrow 9AM</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <input type="time" id="customReminderInput" class="hidden" />
+            </div>
+
+            <div class="task-actions">
+                <button id="cancelTaskBtn" class="btn cancel">Cancel</button>
+                <button id="submitTaskBtn" class="btn add">Add task</button>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/todo.js}"></script>
+</body>
+</html>
