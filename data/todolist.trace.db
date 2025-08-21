@@ -1,0 +1,12 @@
+2025-08-21 21:48:11.028958+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ID" not found; SQL statement:
+SELECT * FROM ID [42102-232]
+2025-08-21 21:48:17.761922+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "TASK" not found; SQL statement:
+SELECT * FROM TASK [42102-232]
+2025-08-22 00:37:39.003265+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SHOW [*]TODO"; SQL statement:
+SHOW TODO [42000-232]
+2025-08-22 00:38:07.352378+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SHOW [*]* FROM TODO"; SQL statement:
+SHOW * FROM TODO [42000-232]

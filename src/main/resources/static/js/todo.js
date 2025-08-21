@@ -236,6 +236,10 @@ const TodoApp = (() => {
         const modal = document.createElement('div');
         modal.className = 'task-modal';
 
+        // 🔧 修正 comment 顯示 - 避免 HTML 注入問題
+        const commentValue = task.comment || '';
+        console.log('Loading task comment:', commentValue); // 除錯用
+
         // 獲取優先級的顯示名稱和顏色
         const getPriorityDisplay = (priority) => {
             const priorityMap = {
@@ -253,75 +257,87 @@ const TodoApp = (() => {
             ? new Date(task.completedDate).toLocaleDateString('en-GB', {
                 day: '2-digit', month: 'short', year: 'numeric',
                 hour: '2-digit', minute: '2-digit'
-              })
+            })
             : '—';
 
         modal.innerHTML = `
-            <div class="task-modal-content two-column">
-                <span class="close-btn">&times;</span>
-                <div class="task-left">
-                    <h2 id="taskTitle">${task.title}</h2>
-                    <p class="task-desc">${task.description || 'No description'}</p>
-                    <div class="sub-task-placeholder">+ Add sub-task</div>
+        <div class="task-modal-content two-column">
+            <span class="close-btn">&times;</span>
+            <div class="task-left">
+                <h2 id="taskTitle">${task.title}</h2>
+                <p class="task-desc">${task.description || 'No description'}</p>
+                <div class="sub-task-placeholder">+ Add sub-task</div>
 
-                    <!-- 改進的 Comment 區域 -->
-                    <div class="comment-section">
-                        <div class="comment-header">
-                            <strong>Notes</strong>
-                            <span class="comment-status" id="commentStatus"></span>
-                        </div>
-                        <div class="comment-box">
-                            <textarea id="commentTextarea" placeholder="Add notes about this task..." data-task-id="${task.id}">${task.comment || ''}</textarea>
-                        </div>
+                <!-- 修正的 Comment 區域 -->
+                <div class="comment-section">
+                    <div class="comment-header">
+                        <strong>Notes</strong>
+                        <span class="comment-status" id="commentStatus"></span>
                     </div>
-                </div>
-                <div class="task-right">
-                    <div class="detail-item">
-                        <strong>Due Date:</strong>
-                        <span id="dueDateDisplay">${task.dueDate || '—'}</span>
-                        ${DEVELOPER_MODE ? `<button id="editDateBtn" class="edit-small-btn">✏️</button>` : ''}
+                    <div class="comment-box">
+                        <textarea id="commentTextarea" placeholder="Add notes about this task..." data-task-id="${task.id}"></textarea>
                     </div>
-                    ${DEVELOPER_MODE ? `
-                    <div id="dateEditSection" class="hidden" style="margin-top: 8px;">
-                        <input type="date" id="editDueDate" value="${task.dueDate || ''}" class="edit-date-input">
-                        <div style="margin-top: 5px;">
-                            <button id="saveDateBtn" class="save-small-btn">保存</button>
-                            <button id="cancelDateBtn" class="cancel-small-btn">取消</button>
-                        </div>
-                    </div>
-                    ` : ''}
-
-                    <div class="detail-item">
-                        <strong>Priority:</strong>
-                        <span style="color: ${priorityInfo.color};">
-                            ${priorityInfo.emoji} ${priorityInfo.name}
-                        </span>
-                    </div>
-                    <div class="detail-item"><strong>Reminder:</strong> ${task.reminder || '—'}</div>
-                    <div class="detail-item"><strong>Status:</strong> ${task.completed ? '✅ 已完成' : '⏳ 進行中'}</div>
-                    ${task.completed ? `<div class="detail-item"><strong>Completed:</strong> ${completedDateText}</div>` : ''}
-                    <div class="detail-item"><strong>Labels:</strong> (none)</div>
-
-                    ${task.completed ? `
-                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
-                            <button id="resetTaskBtn" class="reset-btn">Reset to Incomplete</button>
-                        </div>
-                    ` : ''}
-
-                    <!-- 開發者模式提示 -->
-                    ${DEVELOPER_MODE ? `
-                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #f0f0f0;">
-                        <small style="color: #999; font-size: 11px;">💡 開發者模式：可編輯日期用於測試</small>
-                    </div>
-                    ` : ''}
                 </div>
             </div>
-        `;
+            <div class="task-right">
+                <div class="detail-item">
+                    <strong>Due Date:</strong>
+                    <span id="dueDateDisplay">${task.dueDate || '—'}</span>
+                    ${DEVELOPER_MODE ? `<button id="editDateBtn" class="edit-small-btn">✏️</button>` : ''}
+                </div>
+                ${DEVELOPER_MODE ? `
+                <div id="dateEditSection" class="hidden" style="margin-top: 8px;">
+                    <input type="date" id="editDueDate" value="${task.dueDate || ''}" class="edit-date-input">
+                    <div style="margin-top: 5px;">
+                        <button id="saveDateBtn" class="save-small-btn">保存</button>
+                        <button id="cancelDateBtn" class="cancel-small-btn">取消</button>
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="detail-item">
+                    <strong>Priority:</strong>
+                    <span style="color: ${priorityInfo.color};">
+                        ${priorityInfo.emoji} ${priorityInfo.name}
+                    </span>
+                </div>
+                <div class="detail-item"><strong>Reminder:</strong> ${task.reminder || '—'}</div>
+                <div class="detail-item"><strong>Status:</strong> ${task.completed ? '✅ 已完成' : '⏳ 進行中'}</div>
+                ${task.completed ? `<div class="detail-item"><strong>Completed:</strong> ${completedDateText}</div>` : ''}
+                <div class="detail-item"><strong>Labels:</strong> (none)</div>
+                
+                <!-- 🔧 臨時除錯顯示 comment 值 -->
+                <div class="detail-item"><strong>Comment Debug:</strong> ${commentValue.substring(0, 20)}${commentValue.length > 20 ? '...' : ''}</div>
+
+                ${task.completed ? `
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+                        <button id="resetTaskBtn" class="reset-btn">Reset to Incomplete</button>
+                    </div>
+                ` : ''}
+
+                <!-- 開發者模式提示 -->
+                ${DEVELOPER_MODE ? `
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #f0f0f0;">
+                    <small style="color: #999; font-size: 11px;">💡 開發者模式：可編輯日期用於測試</small>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
         document.body.appendChild(modal);
+
+        // 🔧 關鍵修正：在 DOM 元素創建後設置 textarea 的值
+        const commentTextarea = document.getElementById('commentTextarea');
+        if (commentTextarea) {
+            commentTextarea.value = commentValue;
+            console.log('Set textarea value to:', commentTextarea.value); // 除錯用
+        }
 
         // 設置 comment 功能
         setupCommentFunctionality(task.id);
 
+        // 其他事件監聽器...
         modal.querySelector('.close-btn').addEventListener('click', () => modal.remove());
 
         // 添加 Reset 按鈕事件監聽器
@@ -345,18 +361,31 @@ const TodoApp = (() => {
     function setupCommentFunctionality(taskId) {
         const commentTextarea = document.getElementById('commentTextarea');
         const commentStatus = document.getElementById('commentStatus');
+
+        if (!commentTextarea) {
+            console.error('Comment textarea not found!');
+            return;
+        }
+
         let saveTimeout;
+
+        // 記錄原始值 - 這次確保值已經正確設置
+        const originalValue = commentTextarea.value;
+        commentTextarea.dataset.originalValue = originalValue;
+        console.log('Comment functionality initialized with value:', originalValue);
 
         // 顯示保存狀態
         function showSaveStatus(status, message) {
-            commentStatus.textContent = message;
-            commentStatus.className = `comment-status ${status}`;
+            if (commentStatus) {
+                commentStatus.textContent = message;
+                commentStatus.className = `comment-status ${status}`;
 
-            if (status === 'saved') {
-                setTimeout(() => {
-                    commentStatus.textContent = '';
-                    commentStatus.className = 'comment-status';
-                }, 2000);
+                if (status === 'saved') {
+                    setTimeout(() => {
+                        commentStatus.textContent = '';
+                        commentStatus.className = 'comment-status';
+                    }, 2000);
+                }
             }
         }
 
@@ -370,14 +399,17 @@ const TodoApp = (() => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ comment: comment })
             })
-            .then(response => response.json())
-            .then(() => {
-                showSaveStatus('saved', 'Saved');
-            })
-            .catch(error => {
-                console.error('Error saving comment:', error);
-                showSaveStatus('error', 'Save failed');
-            });
+                .then(response => response.json())
+                .then(() => {
+                    showSaveStatus('saved', 'Saved');
+                    commentTextarea.dataset.originalValue = comment; // 更新原始值
+
+                    loadTasks();
+                })
+                .catch(error => {
+                    console.error('Error saving comment:', error);
+                    showSaveStatus('error', 'Save failed');
+                });
         }
 
         // 監聽輸入事件，延遲自動保存
@@ -394,24 +426,21 @@ const TodoApp = (() => {
         // 監聽失去焦點事件，立即保存
         commentTextarea.addEventListener('blur', () => {
             clearTimeout(saveTimeout);
-            if (commentTextarea.value !== (commentTextarea.dataset.originalValue || '')) {
+            if (commentTextarea.value !== commentTextarea.dataset.originalValue) {
                 autoSaveComment();
             }
         });
-
-        // 記錄原始值
-        commentTextarea.dataset.originalValue = commentTextarea.value;
     }
 
-    async function saveTaskEdit(task, modal) {
-        await fetch(`${API_URL}/${task.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(task)
-        });
-        modal.remove();
-        loadTasks();
-    }
+    // async function saveTaskEdit(task, modal) {
+    //     await fetch(`${API_URL}/${task.id}`, {
+    //         method: 'PUT',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify(task)
+    //     });
+    //     modal.remove();
+    //     loadTasks();
+    // }
 
     async function toggleTask(id) {
         await fetch(`${API_URL}/${id}`, { method: 'PATCH' });
