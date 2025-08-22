@@ -1,0 +1,81 @@
+/* ===== 新增任務 ===== */
+.add-task {
+    margin-top: 20px;
+    color: #888;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.add-task:hover {
+    color: #555;
+}
+
+.add-task-form {
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #fafafa;
+    animation: fadeIn 0.2s ease-in;
+}
+
+.add-task-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.add-task-textarea {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-height: 60px;
+    resize: vertical;
+}
+
+.task-options {
+    display: flex;
+    gap: 8px;
+}
+
+.tag-select {
+    background: #f3f3f3;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.tag-select:hover {
+    background: #e7e7e7;
+}
+
+.task-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn.cancel {
+    background: #f3f3f3;
+    color: #333;
+}
+
+.btn.add {
+    background: #e6b877;
+    color: #fff;
+}

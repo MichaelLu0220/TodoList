@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Today</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
 <div class="container">
@@ -76,6 +76,15 @@
         </section>
     </main>
 </div>
-<script th:src="@{/js/todo.js}"></script>
+<!-- 按正確順序載入 JavaScript 模組 -->
+<script th:src="@{/js/config.js}"></script>                    <!-- 配置和常數 -->
+<script th:src="@{/js/utils.js}"></script>                     <!-- 工具函數 -->
+<script th:src="@{/js/api.js}"></script>                       <!-- API 交互 -->
+<script th:src="@{/js/task-renderer.js}"></script>             <!-- 任務渲染 -->
+<script th:src="@{/js/task-form.js}"></script>                 <!-- 新增任務表單 -->
+<script th:src="@{/js/task-modal.js}"></script>                <!-- 任務詳情彈窗 -->
+<script th:src="@{/js/editors.js}"></script>                   <!-- 描述和評論編輯器 -->
+<script th:src="@{/js/main-app.js}"></script>                  <!-- 主應用程式 -->
+<script th:src="@{/js/main.js}"></script>                      <!-- 主載入檔案 -->
 </body>
 </html>
