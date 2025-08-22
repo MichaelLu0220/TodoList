@@ -10,3 +10,10 @@ SHOW TODO [42000-232]
 2025-08-22 00:38:07.352378+08:00 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SHOW [*]* FROM TODO"; SQL statement:
 SHOW * FROM TODO [42000-232]
+2025-08-22 14:27:01.678675+08:00 jdbc[100]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "select * from TODO\000d\000ashow [*]TODO"; SQL statement:
+select * from TODO
+show TODO [42000-232]
+2025-08-22 14:27:05.515101+08:00 jdbc[100]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "show [*]TODO"; SQL statement:
+show TODO [42000-232]

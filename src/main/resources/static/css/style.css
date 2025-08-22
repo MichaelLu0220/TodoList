@@ -480,7 +480,149 @@ h1 {
     }
 }
 
-/* ===== Comment 功能樣式 ===== */
+/* ===== 描述編輯功能樣式 ===== */
+.description-section {
+    margin-bottom: 20px;
+}
+
+/* 描述顯示模式 */
+.description-display {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 20px;
+}
+
+.description-display:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.description-display::after {
+    content: "點擊編輯";
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 11px;
+    color: #6c757d;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.description-display:hover::after {
+    opacity: 1;
+}
+
+.description-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #495057;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 描述編輯模式 */
+.description-edit {
+    position: relative;
+}
+
+.description-edit textarea {
+    width: 100%;
+    min-height: 100px;
+    border: 2px solid #28a745;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.description-edit textarea:focus {
+    outline: none;
+    border-color: #1e7e34;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.description-edit textarea::placeholder {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.description-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.description-btn {
+    padding: 6px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.description-btn.save {
+    background: #28a745;
+    color: #fff;
+    border-color: #28a745;
+}
+
+.description-btn.save:hover {
+    background: #1e7e34;
+    border-color: #1e7e34;
+}
+
+.description-btn.cancel {
+    color: #6c757d;
+}
+
+.description-btn.cancel:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* 空描述狀態 */
+.description-empty {
+    padding: 12px;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    text-align: center;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+}
+
+.description-empty:hover {
+    border-color: #28a745;
+    color: #28a745;
+    background: #e8f5e8;
+}
+
+.description-empty .add-description-text {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.description-empty .add-description-hint {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+
+/* ===== Comment 功能樣式 - 更新版 ===== */
 .comment-section {
     display: flex;
     flex-direction: column;
@@ -520,41 +662,194 @@ h1 {
     color: #f44336;
 }
 
-.comment-box {
+/* 評論顯示模式 */
+.comment-display {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
     position: relative;
 }
 
-.comment-box textarea {
+.comment-display:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.comment-display::after {
+    content: "點擊編輯";
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 11px;
+    color: #6c757d;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.comment-display:hover::after {
+    opacity: 1;
+}
+
+.comment-text {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #495057;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin-bottom: 8px;
+}
+
+.comment-meta {
+    font-size: 11px;
+    color: #6c757d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #dee2e6;
+}
+
+.comment-timestamp {
+    font-style: italic;
+}
+
+.comment-edit-hint {
+    opacity: 0.7;
+}
+
+/* 評論編輯模式 */
+.comment-edit {
+    position: relative;
+}
+
+.comment-edit textarea {
     width: 100%;
-    min-height: 80px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
+    min-height: 100px;
+    border: 2px solid #007bff;
+    border-radius: 6px;
+    padding: 12px;
     font-size: 14px;
     line-height: 1.4;
     resize: vertical;
     font-family: inherit;
     transition: border-color 0.3s ease;
     box-sizing: border-box;
+    background: #fff;
 }
 
-.comment-box textarea:focus {
+.comment-edit textarea:focus {
     outline: none;
-    border-color: #2196F3;
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    border-color: #0056b3;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
-.comment-box textarea::placeholder {
-    color: #999;
+.comment-edit textarea::placeholder {
+    color: #6c757d;
     font-style: italic;
 }
 
-/* 當有內容時的樣式 */
-.comment-box textarea:not(:placeholder-shown) {
-    background-color: #fafafa;
+.comment-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
 }
 
-/* 改善原有的 comment-box 樣式 */
-.task-left .comment-box {
-    margin-top: 5px;
+.comment-btn {
+    padding: 6px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.comment-btn.save {
+    background: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.comment-btn.save:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+}
+
+.comment-btn.cancel {
+    color: #6c757d;
+}
+
+.comment-btn.cancel:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* 空評論狀態 */
+.comment-empty {
+    padding: 12px;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    text-align: center;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+}
+
+.comment-empty:hover {
+    border-color: #007bff;
+    color: #007bff;
+    background: #e7f3ff;
+}
+
+.comment-empty .add-comment-text {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.comment-empty .add-comment-hint {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .description-display::after,
+    .comment-display::after {
+        display: none; /* 手機版隱藏提示文字 */
+    }
+
+    .description-edit textarea,
+    .comment-edit textarea {
+        min-height: 80px;
+        font-size: 13px;
+    }
+
+    .description-btn,
+    .comment-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .comment-meta {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .description-actions,
+    .comment-actions {
+        flex-direction: column;
+    }
+
+    .description-btn,
+    .comment-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }

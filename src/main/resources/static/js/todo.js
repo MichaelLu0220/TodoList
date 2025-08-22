@@ -236,10 +236,6 @@ const TodoApp = (() => {
         const modal = document.createElement('div');
         modal.className = 'task-modal';
 
-        // 🔧 修正 comment 顯示 - 避免 HTML 注入問題
-        const commentValue = task.comment || '';
-        console.log('Loading task comment:', commentValue); // 除錯用
-
         // 獲取優先級的顯示名稱和顏色
         const getPriorityDisplay = (priority) => {
             const priorityMap = {
@@ -260,22 +256,33 @@ const TodoApp = (() => {
             })
             : '—';
 
+        // 生成描述和評論區域 HTML
+        const descriptionSectionHTML = generateDescriptionSectionHTML(task);
+        const commentSectionHTML = generateCommentSectionHTML(task);
+
         modal.innerHTML = `
         <div class="task-modal-content two-column">
             <span class="close-btn">&times;</span>
             <div class="task-left">
                 <h2 id="taskTitle">${task.title}</h2>
-                <p class="task-desc">${task.description || 'No description'}</p>
+
+                <!-- 新的描述區域 -->
+                <div class="description-section">
+                    <div id="descriptionContainer" data-task-id="${task.id}">
+                        ${descriptionSectionHTML}
+                    </div>
+                </div>
+
                 <div class="sub-task-placeholder">+ Add sub-task</div>
 
-                <!-- 修正的 Comment 區域 -->
+                <!-- 評論區域 -->
                 <div class="comment-section">
                     <div class="comment-header">
                         <strong>Notes</strong>
                         <span class="comment-status" id="commentStatus"></span>
                     </div>
-                    <div class="comment-box">
-                        <textarea id="commentTextarea" placeholder="Add notes about this task..." data-task-id="${task.id}"></textarea>
+                    <div id="commentContainer" data-task-id="${task.id}">
+                        ${commentSectionHTML}
                     </div>
                 </div>
             </div>
@@ -305,9 +312,6 @@ const TodoApp = (() => {
                 <div class="detail-item"><strong>Status:</strong> ${task.completed ? '✅ 已完成' : '⏳ 進行中'}</div>
                 ${task.completed ? `<div class="detail-item"><strong>Completed:</strong> ${completedDateText}</div>` : ''}
                 <div class="detail-item"><strong>Labels:</strong> (none)</div>
-                
-                <!-- 🔧 臨時除錯顯示 comment 值 -->
-                <div class="detail-item"><strong>Comment Debug:</strong> ${commentValue.substring(0, 20)}${commentValue.length > 20 ? '...' : ''}</div>
 
                 ${task.completed ? `
                     <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
@@ -327,15 +331,9 @@ const TodoApp = (() => {
 
         document.body.appendChild(modal);
 
-        // 🔧 關鍵修正：在 DOM 元素創建後設置 textarea 的值
-        const commentTextarea = document.getElementById('commentTextarea');
-        if (commentTextarea) {
-            commentTextarea.value = commentValue;
-            console.log('Set textarea value to:', commentTextarea.value); // 除錯用
-        }
-
-        // 設置 comment 功能
-        setupCommentFunctionality(task.id);
+        // 設置描述和評論功能
+        setupDescriptionFunctionality(task);
+        setupNewCommentFunctionality(task);
 
         // 其他事件監聽器...
         modal.querySelector('.close-btn').addEventListener('click', () => modal.remove());
@@ -446,6 +444,374 @@ const TodoApp = (() => {
         await fetch(`${API_URL}/${id}`, { method: 'PATCH' });
         loadTasks();
     }
+
+    // 新的評論區域 HTML 生成函數
+    function generateCommentSectionHTML(task) {
+        const hasComment = task.comment && task.comment.trim() !== '';
+
+        if (hasComment) {
+            // 有評論時顯示評論內容
+            const commentUpdatedDate = task.commentUpdatedDate
+                ? new Date(task.commentUpdatedDate).toLocaleString('zh-TW', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                : '未知時間';
+
+            return `
+                <div class="comment-display" id="commentDisplay">
+                    <div class="comment-text">${escapeHtml(task.comment)}</div>
+                    <div class="comment-meta">
+                        <span class="comment-timestamp">更新於 ${commentUpdatedDate}</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            // 沒有評論時顯示添加提示
+            return `
+                <div class="comment-empty" id="commentEmpty">
+                    <div class="add-comment-text">📝 添加筆記</div>
+                    <div class="add-comment-hint">點擊開始記錄想法...</div>
+                </div>
+            `;
+        }
+    }
+
+    // HTML 轉義函數
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // 新的評論功能設置
+    function setupNewCommentFunctionality(task) {
+        const commentContainer = document.getElementById('commentContainer');
+        const commentStatus = document.getElementById('commentStatus');
+        const taskId = task.id;
+
+        let isEditing = false;
+        let currentComment = task.comment || '';
+
+        // 顯示保存狀態
+        function showSaveStatus(status, message) {
+            if (commentStatus) {
+                commentStatus.textContent = message;
+                commentStatus.className = `comment-status ${status}`;
+
+                if (status === 'saved') {
+                    setTimeout(() => {
+                        commentStatus.textContent = '';
+                        commentStatus.className = 'comment-status';
+                    }, 2000);
+                }
+            }
+        }
+
+        // 切換到編輯模式
+        function switchToEditMode() {
+            if (isEditing) return;
+
+            isEditing = true;
+            commentContainer.innerHTML = `
+                <div class="comment-edit">
+                    <textarea id="commentTextarea" placeholder="在此添加筆記...">${currentComment}</textarea>
+                    <div class="comment-actions">
+                        <button class="comment-btn cancel" id="cancelCommentBtn">取消</button>
+                        <button class="comment-btn save" id="saveCommentBtn">保存</button>
+                    </div>
+                </div>
+            `;
+
+            const textarea = document.getElementById('commentTextarea');
+            const saveBtn = document.getElementById('saveCommentBtn');
+            const cancelBtn = document.getElementById('cancelCommentBtn');
+
+            // 聚焦並選中文字
+            textarea.focus();
+            textarea.select();
+
+            // 保存按鈕事件
+            saveBtn.addEventListener('click', saveComment);
+
+            // 取消按鈕事件
+            cancelBtn.addEventListener('click', cancelEdit);
+
+            // 快捷鍵支援
+            textarea.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    saveComment();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelEdit();
+                }
+            });
+        }
+
+        // 保存評論
+        async function saveComment() {
+            const textarea = document.getElementById('commentTextarea');
+            const newComment = textarea.value.trim();
+
+            showSaveStatus('saving', 'Saving...');
+
+            try {
+                const response = await fetch(`${API_URL}/${taskId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment: newComment })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Save failed');
+                }
+
+                const updatedTask = await response.json();
+                currentComment = newComment;
+
+                showSaveStatus('saved', 'Saved');
+
+                // 更新顯示模式
+                switchToDisplayMode(updatedTask);
+
+                // 重新載入任務列表
+                loadTasks();
+
+            } catch (error) {
+                console.error('Error saving comment:', error);
+                showSaveStatus('error', 'Save failed');
+            }
+        }
+
+        // 取消編輯
+        function cancelEdit() {
+            if (currentComment.trim() === '') {
+                switchToEmptyMode();
+            } else {
+                // 使用當前任務資料重建顯示模式
+                const updatedTask = {
+                    ...task,
+                    comment: currentComment,
+                    commentUpdatedDate: task.commentUpdatedDate
+                };
+                switchToDisplayMode(updatedTask);
+            }
+        }
+
+        // 切換到顯示模式
+        function switchToDisplayMode(updatedTask) {
+            isEditing = false;
+            const commentUpdatedDate = updatedTask.commentUpdatedDate
+                ? new Date(updatedTask.commentUpdatedDate).toLocaleString('zh-TW', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                : '剛剛';
+
+            commentContainer.innerHTML = `
+                <div class="comment-display" id="commentDisplay">
+                    <div class="comment-text">${escapeHtml(updatedTask.comment)}</div>
+                    <div class="comment-meta">
+                        <span class="comment-timestamp">更新於 ${commentUpdatedDate}</span>
+                    </div>
+                </div>
+            `;
+
+            // 重新綁定點擊事件
+            document.getElementById('commentDisplay').addEventListener('click', switchToEditMode);
+        }
+
+        // 切換到空狀態模式
+        function switchToEmptyMode() {
+            isEditing = false;
+            commentContainer.innerHTML = `
+                <div class="comment-empty" id="commentEmpty">
+                    <div class="add-comment-text">📝 添加筆記</div>
+                    <div class="add-comment-hint">點擊開始記錄想法...</div>
+                </div>
+            `;
+
+            // 重新綁定點擊事件
+            document.getElementById('commentEmpty').addEventListener('click', switchToEditMode);
+        }
+
+        // 初始化點擊事件
+        const commentDisplay = document.getElementById('commentDisplay');
+        const commentEmpty = document.getElementById('commentEmpty');
+
+        if (commentDisplay) {
+            commentDisplay.addEventListener('click', switchToEditMode);
+        }
+
+        if (commentEmpty) {
+            commentEmpty.addEventListener('click', switchToEditMode);
+        }
+    }
+
+
+    // 新的描述區域 HTML 生成函數
+    function generateDescriptionSectionHTML(task) {
+        const hasDescription = task.description && task.description.trim() !== '';
+
+        if (hasDescription) {
+            // 有描述時顯示描述內容
+            return `
+                <div class="description-display" id="descriptionDisplay">
+                    <div class="description-text">${escapeHtml(task.description)}</div>
+                </div>
+            `;
+        } else {
+            // 沒有描述時顯示添加提示
+            return `
+                <div class="description-empty" id="descriptionEmpty">
+                    <div class="add-description-text">📝 添加描述</div>
+                    <div class="add-description-hint">點擊添加任務詳細說明...</div>
+                </div>
+            `;
+        }
+    }
+
+
+    // 新的描述功能設置
+    function setupDescriptionFunctionality(task) {
+        const descriptionContainer = document.getElementById('descriptionContainer');
+        const taskId = task.id;
+
+        let isEditing = false;
+        let currentDescription = task.description || '';
+
+        // 切換到編輯模式
+        function switchToEditMode() {
+            if (isEditing) return;
+
+            isEditing = true;
+            descriptionContainer.innerHTML = `
+                <div class="description-edit">
+                    <textarea id="descriptionTextarea" placeholder="在此添加任務描述...">${currentDescription}</textarea>
+                    <div class="description-actions">
+                        <button class="description-btn cancel" id="cancelDescriptionBtn">取消</button>
+                        <button class="description-btn save" id="saveDescriptionBtn">保存</button>
+                    </div>
+                </div>
+            `;
+
+            const textarea = document.getElementById('descriptionTextarea');
+            const saveBtn = document.getElementById('saveDescriptionBtn');
+            const cancelBtn = document.getElementById('cancelDescriptionBtn');
+
+            // 聚焦並選中文字
+            textarea.focus();
+            textarea.select();
+
+            // 保存按鈕事件
+            saveBtn.addEventListener('click', saveDescription);
+
+            // 取消按鈕事件
+            cancelBtn.addEventListener('click', cancelEdit);
+
+            // 快捷鍵支援
+            textarea.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    saveDescription();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelEdit();
+                }
+            });
+        }
+
+        // 保存描述
+        async function saveDescription() {
+            const textarea = document.getElementById('descriptionTextarea');
+            const newDescription = textarea.value.trim();
+
+            try {
+                const response = await fetch(`${API_URL}/${taskId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description: newDescription })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Save failed');
+                }
+
+                currentDescription = newDescription;
+
+                // 更新顯示模式
+                if (newDescription.trim() === '') {
+                    switchToEmptyMode();
+                } else {
+                    switchToDisplayMode();
+                }
+
+                // 重新載入任務列表
+                loadTasks();
+
+            } catch (error) {
+                console.error('Error saving description:', error);
+                alert('保存描述失敗，請重試');
+            }
+        }
+
+        // 取消編輯
+        function cancelEdit() {
+            if (currentDescription.trim() === '') {
+                switchToEmptyMode();
+            } else {
+                switchToDisplayMode();
+            }
+        }
+
+        // 切換到顯示模式
+        function switchToDisplayMode() {
+            isEditing = false;
+            descriptionContainer.innerHTML = `
+                <div class="description-display" id="descriptionDisplay">
+                    <div class="description-text">${escapeHtml(currentDescription)}</div>
+                </div>
+            `;
+
+            // 重新綁定點擊事件
+            document.getElementById('descriptionDisplay').addEventListener('click', switchToEditMode);
+        }
+
+        // 切換到空狀態模式
+        function switchToEmptyMode() {
+            isEditing = false;
+            descriptionContainer.innerHTML = `
+                <div class="description-empty" id="descriptionEmpty">
+                    <div class="add-description-text">📝 添加描述</div>
+                    <div class="add-description-hint">點擊添加任務詳細說明...</div>
+                </div>
+            `;
+
+            // 重新綁定點擊事件
+            document.getElementById('descriptionEmpty').addEventListener('click', switchToEditMode);
+        }
+
+        // 初始化點擊事件
+        const descriptionDisplay = document.getElementById('descriptionDisplay');
+        const descriptionEmpty = document.getElementById('descriptionEmpty');
+
+        if (descriptionDisplay) {
+            descriptionDisplay.addEventListener('click', switchToEditMode);
+        }
+
+        if (descriptionEmpty) {
+            descriptionEmpty.addEventListener('click', switchToEditMode);
+        }
+    }
+
+
 
     // 🛠️ 開發者模式功能
     if (DEVELOPER_MODE) {

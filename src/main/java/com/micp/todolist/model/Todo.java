@@ -20,6 +20,9 @@ public class Todo {
     @Column(columnDefinition = "TEXT")
     private String comment;       // 任務筆記/評論
 
+    @Column(name = "comment_updated_date")
+    private LocalDateTime commentUpdatedDate; // 評論最後更新時間
+
     private boolean completed;
 
     @Column(name = "created_date")
@@ -123,6 +126,20 @@ public class Todo {
 
     public void setComment(String comment) {
         this.comment = comment;
+        // 當設置評論時，自動更新評論時間
+        if (comment != null && !comment.trim().isEmpty()) {
+            this.commentUpdatedDate = LocalDateTime.now();
+        } else {
+            this.commentUpdatedDate = null;
+        }
+    }
+
+    public LocalDateTime getCommentUpdatedDate() {
+        return commentUpdatedDate;
+    }
+
+    public void setCommentUpdatedDate(LocalDateTime commentUpdatedDate) {
+        this.commentUpdatedDate = commentUpdatedDate;
     }
 
     public String getPriority() {

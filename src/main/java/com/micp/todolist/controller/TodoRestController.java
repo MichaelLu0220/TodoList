@@ -45,6 +45,7 @@ public class TodoRestController {
         map.put("title", todo.getTitle());
         map.put("description", todo.getDescription());
         map.put("comment", todo.getComment()); // 新增 comment 欄位
+        map.put("commentUpdatedDate", todo.getCommentUpdatedDate()); // 新增評論更新時間
         map.put("completed", todo.isCompleted());
         map.put("createdDate", todo.getCreatedDate());
         map.put("dueDate", todo.getDueDate());
@@ -150,7 +151,7 @@ public class TodoRestController {
     }
 
     /**
-     * 更新任務
+     * 更新任務 - 修改以正確處理評論更新時間
      * PUT /api/todos/{id}
      */
     @PutMapping("/{id}")
@@ -170,9 +171,10 @@ public class TodoRestController {
             todo.setDescription((String) todoData.get("description"));
         }
 
-        // 更新評論
+        // 更新評論 - 這裡會自動更新 commentUpdatedDate
         if (todoData.containsKey("comment")) {
-            todo.setComment((String) todoData.get("comment"));
+            String newComment = (String) todoData.get("comment");
+            todo.setComment(newComment); // setComment 方法會自動更新時間
         }
 
         // 更新完成狀態
